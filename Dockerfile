@@ -31,14 +31,15 @@ ENV PATH=/root/.local/bin:$PATH
 # Create necessary directories
 RUN mkdir -p /app/data /app/logs
 
-# Expose MCP server port
+# Expose MCP server port (not used for stdio, but kept for future HTTP support)
 EXPOSE 3000
 
-# Health check
+# Health check - verify Python and dependencies are working
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import socket; s=socket.socket(); s.connect(('localhost', 3000)); s.close()" || exit 1
+    CMD python -c "import mcp; import yfinance; import pandas" || exit 1
 
-# Run the MCP server
-CMD ["python", "-m", "src.server"]
+# Keep container alive - MCP server will be started by Bob via docker exec
+# This is the correct approach for stdio-based MCP servers
+CMD ["tail", "-f", "/dev/null"]
 
 # Made with Bob
