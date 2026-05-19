@@ -44,7 +44,7 @@ financial-analysis-mcp/
 
 ```bash
 # Clone repository
-git clone https://github.com/tommypopescu/financial-analysis-mcp.git
+git clone <your-repo-url>
 cd financial-analysis-mcp
 
 # Install dependencies
@@ -134,22 +134,42 @@ The project includes automated CI/CD via GitHub Actions:
 
 1. **Build**: Builds Docker image on push
 2. **Test**: Runs unit tests
-3. **Push**: Pushes image to GHCR
-4. **Deploy**: Ready for deployment to OMV server
+3. **Push**: Pushes image to registry
+4. **Deploy**: Deploys to OMV server (on main branch)
 
 ## 🖥️ OMV Server Deployment
 
-See [QUICKSTART.md](QUICKSTART.md) for detailed deployment instructions in Romanian.
+### Prerequisites
+- Docker installed on OMV server
+- SSH access configured
+- Docker registry access (optional)
 
-### Quick Deploy
+### Deployment Steps
+
+1. **Configure secrets** in GitHub repository:
+   - `OMV_HOST`: Server hostname/IP
+   - `OMV_USER`: SSH username
+   - `OMV_SSH_KEY`: SSH private key
+   - `DOCKER_REGISTRY_USER`: Docker registry username (optional)
+   - `DOCKER_REGISTRY_TOKEN`: Docker registry token (optional)
+
+2. **Push to main branch**:
+   ```bash
+   git push origin main
+   ```
+
+3. **Monitor deployment**:
+   - Check GitHub Actions workflow
+   - SSH to OMV server and verify: `docker ps`
+
+### Manual Deployment
 
 ```bash
 # On OMV server
-git clone https://github.com/tommypopescu/financial-analysis-mcp.git
-cd financial-analysis-mcp
-cp .env.example .env
-docker pull ghcr.io/tommypopescu/financial-analysis-mcp:latest
-docker-compose up -d
+cd /path/to/deployment
+git pull origin main
+docker-compose down
+docker-compose up -d --build
 ```
 
 ## 📝 Development
@@ -211,4 +231,3 @@ For issues and questions:
 - Open GitHub issue
 - Check documentation
 - Review logs for errors
-

@@ -36,7 +36,7 @@ financial-analysis-mcp/
 ### 2. **10 Tool-uri MCP Implementate**
 
 | Tool | Descriere | Parametri |
-|------|-----------|-----------||
+|------|-----------|-----------|
 | `get_ticker_info` | Info companie | ticker |
 | `get_historical_data` | Date istorice | ticker, period, interval |
 | `get_current_price` | Preț curent | ticker |

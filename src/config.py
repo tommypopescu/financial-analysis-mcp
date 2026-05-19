@@ -14,6 +14,7 @@ class Config:
     
     # Server Configuration
     MCP_SERVER_PORT: int = int(os.getenv('MCP_SERVER_PORT', '3000'))
+    HTTP_PORT: int = int(os.getenv('HTTP_PORT', '8000'))
     LOG_LEVEL: str = os.getenv('LOG_LEVEL', 'INFO')
     
     # Data Configuration
