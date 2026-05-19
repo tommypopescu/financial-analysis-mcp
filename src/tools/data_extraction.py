@@ -101,8 +101,7 @@ def fetch_ticker_data(
             'data_points': len(df),
             'start_date': df.index[0].strftime('%Y-%m-%d'),
             'end_date': df.index[-1].strftime('%Y-%m-%d'),
-            'data': data_dict,
-            'dataframe': df  # Keep DataFrame for internal use
+            'data': data_dict
         }
         
     except Exception as e:
