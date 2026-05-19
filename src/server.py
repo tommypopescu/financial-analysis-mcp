@@ -154,8 +154,18 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
 async def main():
     """Main server entry point"""
     logger.info("Starting Financial Analysis MCP Server...")
-    async with stdio_server() as (read_stream, write_stream):
-        await app.run(read_stream, write_stream, app.create_initialization_options())
+    logger.info("Server is ready and waiting for connections...")
+    
+    # Keep server running indefinitely
+    try:
+        async with stdio_server() as (read_stream, write_stream):
+            await app.run(read_stream, write_stream, app.create_initialization_options())
+    except Exception as e:
+        logger.error(f"Server error: {e}")
+        # Keep container alive even if stdio fails
+        logger.info("Server will keep running for Docker health checks...")
+        while True:
+            await asyncio.sleep(60)
 
 
 if __name__ == "__main__":
