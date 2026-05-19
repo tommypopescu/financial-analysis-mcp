@@ -31,8 +31,8 @@ ENV PATH=/root/.local/bin:$PATH
 # Create necessary directories
 RUN mkdir -p /app/data /app/logs
 
-# Expose MCP server port (not used for stdio, but kept for future HTTP support)
-EXPOSE 3000
+# Expose ports for both stdio and HTTP transport
+EXPOSE 3000 8000
 
 # Health check - verify Python and dependencies are working
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
