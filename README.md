@@ -212,6 +212,3 @@ For issues and questions:
 - Check documentation
 - Review logs for errors
 
----
-
-**Made with Bob** 🤖
