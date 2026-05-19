@@ -4,6 +4,7 @@ Main server implementation using Model Context Protocol
 """
 import asyncio
 import logging
+import pandas as pd
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
 from mcp.types import Tool, TextContent
@@ -121,14 +122,30 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             ticker = arguments['ticker']
             data = fetch_ticker_data(ticker, arguments.get('period', '1y'))
             if data['success']:
-                result = calculate_all_indicators(data['dataframe'])
+                # Reconstruct DataFrame from data dict
+                df = pd.DataFrame({
+                    'Open': data['data']['open'],
+                    'High': data['data']['high'],
+                    'Low': data['data']['low'],
+                    'Close': data['data']['close'],
+                    'Volume': data['data']['volume']
+                }, index=pd.to_datetime(data['data']['dates']))
+                result = calculate_all_indicators(df)
             else:
                 result = data
         elif name == "generate_investment_summary":
             ticker = arguments['ticker']
             data = fetch_ticker_data(ticker, '1y')
             if data['success']:
-                result = generate_investment_summary(data['dataframe'], ticker)
+                # Reconstruct DataFrame from data dict
+                df = pd.DataFrame({
+                    'Open': data['data']['open'],
+                    'High': data['data']['high'],
+                    'Low': data['data']['low'],
+                    'Close': data['data']['close'],
+                    'Volume': data['data']['volume']
+                }, index=pd.to_datetime(data['data']['dates']))
+                result = generate_investment_summary(df, ticker)
             else:
                 result = data
         elif name == "list_tickers":

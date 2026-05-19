@@ -107,7 +107,15 @@ def screen_tickers(tickers: List[str], criteria: Dict[str, Any]) -> Dict[str, An
             if not data.get('success'):
                 continue
             
-            df = data['dataframe']
+            # Reconstruct DataFrame from data dict
+            df = pd.DataFrame({
+                'Open': data['data']['open'],
+                'High': data['data']['high'],
+                'Low': data['data']['low'],
+                'Close': data['data']['close'],
+                'Volume': data['data']['volume']
+            }, index=pd.to_datetime(data['data']['dates']))
+            
             close = get_close_series(df)
             rsi = compute_rsi(close)
             
