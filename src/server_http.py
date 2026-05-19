@@ -4,6 +4,7 @@ HTTP-based server for better compatibility with Bob
 """
 import asyncio
 import logging
+import pandas as pd
 from typing import Any
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -168,14 +169,30 @@ async def call_tool(request: ToolRequest) -> ToolResponse:
             ticker = request.arguments['ticker']
             data = fetch_ticker_data(ticker, request.arguments.get('period', '1y'))
             if data['success']:
-                result = calculate_all_indicators(data['dataframe'])
+                # Reconstruct DataFrame from data dict
+                df = pd.DataFrame({
+                    'Open': data['data']['open'],
+                    'High': data['data']['high'],
+                    'Low': data['data']['low'],
+                    'Close': data['data']['close'],
+                    'Volume': data['data']['volume']
+                }, index=pd.to_datetime(data['data']['dates']))
+                result = calculate_all_indicators(df)
             else:
                 result = data
         elif request.name == "generate_investment_summary":
             ticker = request.arguments['ticker']
             data = fetch_ticker_data(ticker, '1y')
             if data['success']:
-                result = generate_investment_summary(data['dataframe'], ticker)
+                # Reconstruct DataFrame from data dict
+                df = pd.DataFrame({
+                    'Open': data['data']['open'],
+                    'High': data['data']['high'],
+                    'Low': data['data']['low'],
+                    'Close': data['data']['close'],
+                    'Volume': data['data']['volume']
+                }, index=pd.to_datetime(data['data']['dates']))
+                result = generate_investment_summary(df, ticker)
             else:
                 result = data
         elif request.name == "list_tickers":
