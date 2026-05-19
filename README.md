@@ -1,5 +1,5 @@
 # Financial Analysis MCP Server
-
+1
 A Model Context Protocol (MCP) server that provides comprehensive financial analysis tools for automated investment analysis using technical indicators.
 
 ## 🎯 Features
