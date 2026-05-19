@@ -17,6 +17,20 @@ from .tools import (
     generate_investment_summary, screen_tickers,
     list_tickers, add_ticker, remove_ticker
 )
+
+# ============================================================================
+# PORTFOLIO MANAGEMENT ADDITION - START
+# Added: 2026-05-19 for family portfolio tracking (2 portfolios)
+# Can be safely removed by reverting to commit aa150c1 if issues occur
+# ============================================================================
+from .tools.portfolio import (
+    list_portfolios, get_portfolio, add_holding, remove_holding,
+    set_target_allocation, analyze_portfolio_allocation,
+    get_investment_recommendation
+)
+# ============================================================================
+# PORTFOLIO MANAGEMENT ADDITION - END
+# ============================================================================
 from .config import config
 
 # Setup logging
@@ -150,7 +164,83 @@ async def list_tools():
                         "criteria": {"type": "object", "description": "Screening criteria (e.g., rsi_below: 30)"}
                     }
                 }
+            },
+            # ============================================================================
+            # PORTFOLIO TOOLS - START (Added 2026-05-19)
+            # ============================================================================
+            {
+                "name": "list_portfolios",
+                "description": "List all family portfolios with summary information",
+                "inputSchema": {"type": "object", "properties": {}}
+            },
+            {
+                "name": "get_portfolio",
+                "description": "Get detailed portfolio information including holdings and allocations",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "portfolio_id": {"type": "string", "description": "Portfolio identifier (portfolio1 or portfolio2)"}
+                    },
+                    "required": ["portfolio_id"]
+                }
+            },
+            {
+                "name": "add_holding",
+                "description": "Add or update a holding in portfolio",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "portfolio_id": {"type": "string", "description": "Portfolio identifier"},
+                        "ticker": {"type": "string", "description": "Stock ticker symbol"},
+                        "shares": {"type": "number", "description": "Number of shares"},
+                        "avg_price": {"type": "number", "description": "Average purchase price per share"},
+                        "purchase_date": {"type": "string", "description": "Purchase date (YYYY-MM-DD, optional)"},
+                        "notes": {"type": "string", "description": "Optional notes"}
+                    },
+                    "required": ["portfolio_id", "ticker", "shares", "avg_price"]
+                }
+            },
+            {
+                "name": "set_target_allocation",
+                "description": "Set target allocation percentage for a ticker in portfolio",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "portfolio_id": {"type": "string", "description": "Portfolio identifier"},
+                        "ticker": {"type": "string", "description": "Stock ticker symbol"},
+                        "target_weight_pct": {"type": "number", "description": "Target weight percentage (0-100)"},
+                        "notes": {"type": "string", "description": "Optional notes"}
+                    },
+                    "required": ["portfolio_id", "ticker", "target_weight_pct"]
+                }
+            },
+            {
+                "name": "analyze_portfolio_allocation",
+                "description": "Analyze portfolio allocation vs targets and get rebalancing recommendations",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "portfolio_id": {"type": "string", "description": "Portfolio identifier"}
+                    },
+                    "required": ["portfolio_id"]
+                }
+            },
+            {
+                "name": "get_investment_recommendation",
+                "description": "Get personalized investment recommendation considering portfolio context",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "portfolio_id": {"type": "string", "description": "Portfolio identifier"},
+                        "ticker": {"type": "string", "description": "Stock ticker to analyze"},
+                        "investment_amount": {"type": "number", "description": "Amount to potentially invest"}
+                    },
+                    "required": ["portfolio_id", "ticker", "investment_amount"]
+                }
             }
+            # ============================================================================
+            # PORTFOLIO TOOLS - END
+            # ============================================================================
         ]
     }
 
@@ -205,6 +295,24 @@ async def call_tool(request: ToolRequest) -> ToolResponse:
                 result = screen_tickers(tickers_data['tickers'], request.arguments.get('criteria', {}))
             else:
                 result = tickers_data
+        # ============================================================================
+        # PORTFOLIO HANDLERS - START (Added 2026-05-19)
+        # ============================================================================
+        elif request.name == "list_portfolios":
+            result = list_portfolios()
+        elif request.name == "get_portfolio":
+            result = get_portfolio(**request.arguments)
+        elif request.name == "add_holding":
+            result = add_holding(**request.arguments)
+        elif request.name == "set_target_allocation":
+            result = set_target_allocation(**request.arguments)
+        elif request.name == "analyze_portfolio_allocation":
+            result = analyze_portfolio_allocation(**request.arguments)
+        elif request.name == "get_investment_recommendation":
+            result = get_investment_recommendation(**request.arguments)
+        # ============================================================================
+        # PORTFOLIO HANDLERS - END
+        # ============================================================================
         else:
             raise HTTPException(status_code=400, detail=f"Unknown tool: {request.name}")
         

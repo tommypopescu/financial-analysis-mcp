@@ -9,7 +9,7 @@ import os
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from .data_extraction import fetch_ticker_data, get_current_price
-from .analysis import calculate_all_indicators
+# Note: analysis imports are done locally where needed to avoid circular imports
 
 # Portfolio data directory
 PORTFOLIO_DIR = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'portfolios')
