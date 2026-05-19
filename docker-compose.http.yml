@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  financial-analysis-mcp-http:
+    image: ghcr.io/tommypopescu/financial-analysis-mcp:latest
+    container_name: financial-analysis-mcp-http
+    command: ["python", "-m", "src.server_http"]
+    ports:
+      - "8000:8000"
+    environment:
+      - LOG_LEVEL=INFO
+      - HTTP_PORT=8000
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+# Made with Bob
