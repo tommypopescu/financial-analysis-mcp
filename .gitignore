@@ -45,7 +45,6 @@ logs/
 *.log.*
 
 # Data files (keep structure, ignore content)
-data/*.csv
 !data/.gitkeep
 
 # Environment variables

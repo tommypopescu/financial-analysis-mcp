@@ -1,0 +1,19 @@
+ticker,target_weight_pct,notes
+TLV.RO,40.0,Banca Transilvania - reduce from 48.46% to 40% (rebalance)
+SNP.RO,8.0,OMV Petrom - maintain energy exposure
+DIGI.RO,7.0,Digi Communications - increase telecom
+EL.RO,5.0,Electrica - increase utilities
+TEL.RO,4.0,Transelectrica - increase utilities
+SNG.RO,5.0,Romgaz - increase energy
+SNN.RO,3.0,Nuclearelectrica - increase energy
+DN.RO,3.0,DN Agrar Group - maintain diverse
+AQ.RO,3.0,Aquila - maintain industrials
+ONE.RO,3.0,One United Properties - increase real estate
+TGN.RO,2.0,Transgaz - increase utilities
+SFG.RO,2.0,Sphera Franchise Group - increase consumer
+AROBS.RO,3.0,Arobs - increase technology
+M.RO,2.0,Medlife - increase healthcare
+PE.RO,2.0,Premier Energy - increase energy
+TRP.RO,1.0,Teraplast - maintain industrials
+EAI.RO,0.5,Electro-Alfa - maintain minimal
+CASH,5.5,Cash reserve for opportunities (currently 0.98%)
