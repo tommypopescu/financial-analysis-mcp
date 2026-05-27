@@ -12,7 +12,7 @@ from .data_extraction import fetch_ticker_data, get_current_price
 # Note: analysis imports are done locally where needed to avoid circular imports
 
 # Portfolio data directory
-PORTFOLIO_DIR = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'portfolios')
+PORTFOLIO_DIR = os.path.join(os.path.dirname(__file__), '..', '..', 'data')
 
 # CSV file paths
 PORTFOLIO1_FILE = os.path.join(PORTFOLIO_DIR, 'portfolio1_holdings.csv')
@@ -508,6 +508,149 @@ def analyze_portfolio_allocation(portfolio_id: str) -> Dict:
         'rebalancing_recommendations': sorted(rebalancing_needed, key=lambda x: abs(x['deviation']), reverse=True),
         'is_balanced': len(rebalancing_needed) == 0
     }
+
+def get_portfolio_performance(portfolio_id: str, period: str = '1y', benchmark_ticker: Optional[str] = None) -> Dict:
+    """
+    Get portfolio performance and price history based on current holdings.
+    
+    Args:
+        portfolio_id: Portfolio identifier (portfolio1 or portfolio2)
+        period: Historical period for portfolio performance
+        benchmark_ticker: Optional benchmark ticker for comparison
+        
+    Returns:
+        Dict with portfolio history, return metrics, and optional benchmark comparison
+    """
+    _ensure_portfolio_files()
+    
+    try:
+        holdings_file, _ = _get_portfolio_file(portfolio_id)
+    except ValueError as e:
+        return {
+            'success': False,
+            'error': str(e)
+        }
+    
+    holdings = _read_holdings(holdings_file)
+    active_holdings = {
+        ticker: holding for ticker, holding in holdings.items()
+        if holding.get('shares', 0) > 0
+    }
+    
+    if not active_holdings:
+        return {
+            'success': False,
+            'error': f'Portfolio {portfolio_id} has no active holdings'
+        }
+    
+    portfolio_dates = None
+    portfolio_values = None
+    holdings_history = {}
+    total_cost_basis = 0.0
+    
+    for ticker, holding in active_holdings.items():
+        shares = holding['shares']
+        avg_price = holding['avg_price']
+        total_cost_basis += shares * avg_price
+        
+        history = fetch_ticker_data(ticker, period=period, interval='1d')
+        if not history.get('success'):
+            return {
+                'success': False,
+                'error': f"Failed to fetch history for {ticker}: {history.get('error', 'Unknown error')}",
+                'ticker': ticker
+            }
+        
+        dates = history['data']['dates']
+        closes = history['data']['close']
+        
+        if not dates or not closes:
+            return {
+                'success': False,
+                'error': f'No historical close data available for {ticker}',
+                'ticker': ticker
+            }
+        
+        if portfolio_dates is None:
+            portfolio_dates = dates
+            portfolio_values = [0.0] * len(dates)
+        elif dates != portfolio_dates:
+            return {
+                'success': False,
+                'error': f'Historical data alignment mismatch for {ticker}. Try a different period.'
+            }
+        
+        position_values = [round(price * shares, 2) for price in closes]
+        holdings_history[ticker] = {
+            'shares': shares,
+            'avg_price': round(avg_price, 2),
+            'cost_basis': round(shares * avg_price, 2),
+            'start_price': round(closes[0], 2),
+            'end_price': round(closes[-1], 2),
+            'start_value': round(position_values[0], 2),
+            'end_value': round(position_values[-1], 2),
+            'return_pct': round(((closes[-1] / closes[0]) - 1) * 100, 2) if closes[0] else 0,
+            'history': position_values
+        }
+        
+        portfolio_values = [
+            round(current_total + position_value, 2)
+            for current_total, position_value in zip(portfolio_values, position_values)
+        ]
+    
+    start_value = portfolio_values[0]
+    end_value = portfolio_values[-1]
+    total_return = round(end_value - total_cost_basis, 2)
+    total_return_pct = round(((end_value / total_cost_basis) - 1) * 100, 2) if total_cost_basis > 0 else 0
+    period_return = round(end_value - start_value, 2)
+    period_return_pct = round(((end_value / start_value) - 1) * 100, 2) if start_value > 0 else 0
+    
+    result = {
+        'success': True,
+        'portfolio_id': portfolio_id,
+        'period': period,
+        'currency': 'EUR',
+        'holdings_count': len(active_holdings),
+        'cost_basis': round(total_cost_basis, 2),
+        'start_value': round(start_value, 2),
+        'end_value': round(end_value, 2),
+        'total_return': total_return,
+        'total_return_pct': total_return_pct,
+        'period_return': period_return,
+        'period_return_pct': period_return_pct,
+        'history': {
+            'dates': portfolio_dates,
+            'portfolio_values': portfolio_values
+        },
+        'holdings_history': holdings_history
+    }
+    
+    if benchmark_ticker:
+        benchmark_data = fetch_ticker_data(benchmark_ticker, period=period, interval='1d')
+        if benchmark_data.get('success') and benchmark_data['data']['close']:
+            benchmark_closes = benchmark_data['data']['close']
+            benchmark_start = benchmark_closes[0]
+            benchmark_end = benchmark_closes[-1]
+            benchmark_return_pct = round(((benchmark_end / benchmark_start) - 1) * 100, 2) if benchmark_start > 0 else 0
+            
+            result['benchmark'] = {
+                'ticker': benchmark_ticker.strip().upper(),
+                'start_price': round(benchmark_start, 2),
+                'end_price': round(benchmark_end, 2),
+                'return_pct': benchmark_return_pct,
+                'relative_performance_pct': round(period_return_pct - benchmark_return_pct, 2),
+                'history': {
+                    'dates': benchmark_data['data']['dates'],
+                    'close': benchmark_closes
+                }
+            }
+        else:
+            result['benchmark'] = {
+                'ticker': benchmark_ticker.strip().upper(),
+                'error': benchmark_data.get('error', 'Failed to fetch benchmark data')
+            }
+    
+    return result
 
 def get_investment_recommendation(portfolio_id: str, ticker: str, investment_amount: float) -> Dict:
     """

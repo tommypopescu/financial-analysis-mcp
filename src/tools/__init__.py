@@ -25,6 +25,17 @@ from .ticker_mgmt import (
     remove_ticker
 )
 
+from .portfolio import (
+    list_portfolios,
+    get_portfolio,
+    add_holding,
+    remove_holding,
+    set_target_allocation,
+    analyze_portfolio_allocation,
+    get_portfolio_performance,
+    get_investment_recommendation
+)
+
 __all__ = [
     # Data extraction
     'fetch_ticker_data',
@@ -41,7 +52,16 @@ __all__ = [
     # Ticker management
     'list_tickers',
     'add_ticker',
-    'remove_ticker'
+    'remove_ticker',
+    # Portfolio management
+    'list_portfolios',
+    'get_portfolio',
+    'add_holding',
+    'remove_holding',
+    'set_target_allocation',
+    'analyze_portfolio_allocation',
+    'get_portfolio_performance',
+    'get_investment_recommendation'
 ]
 
 # Made with Bob

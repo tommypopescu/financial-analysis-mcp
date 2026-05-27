@@ -13,7 +13,10 @@ from .tools import (
     fetch_ticker_data, get_current_price, get_ticker_info,
     calculate_rsi, calculate_macd, calculate_all_indicators,
     generate_investment_summary, screen_tickers,
-    list_tickers, add_ticker, remove_ticker
+    list_tickers, add_ticker, remove_ticker,
+    list_portfolios, get_portfolio, add_holding, remove_holding,
+    set_target_allocation, analyze_portfolio_allocation,
+    get_portfolio_performance, get_investment_recommendation
 )
 from .config import config
 
@@ -104,6 +107,89 @@ async def list_tools() -> list[Tool]:
                     "criteria": {"type": "object", "description": "Screening criteria (e.g., rsi_below: 30)"}
                 }
             }
+        ),
+        Tool(
+            name="list_portfolios",
+            description="List all family portfolios with summary information",
+            inputSchema={"type": "object", "properties": {}}
+        ),
+        Tool(
+            name="get_portfolio",
+            description="Get detailed portfolio information including holdings and allocations",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "portfolio_id": {"type": "string", "description": "Portfolio identifier (portfolio1 or portfolio2)"}
+                },
+                "required": ["portfolio_id"]
+            }
+        ),
+        Tool(
+            name="add_holding",
+            description="Add or update a holding in portfolio",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "portfolio_id": {"type": "string", "description": "Portfolio identifier"},
+                    "ticker": {"type": "string", "description": "Stock ticker symbol"},
+                    "shares": {"type": "number", "description": "Number of shares"},
+                    "avg_price": {"type": "number", "description": "Average purchase price per share"},
+                    "purchase_date": {"type": "string", "description": "Purchase date (YYYY-MM-DD, optional)"},
+                    "notes": {"type": "string", "description": "Optional notes"}
+                },
+                "required": ["portfolio_id", "ticker", "shares", "avg_price"]
+            }
+        ),
+        Tool(
+            name="set_target_allocation",
+            description="Set target allocation percentage for a ticker in portfolio",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "portfolio_id": {"type": "string", "description": "Portfolio identifier"},
+                    "ticker": {"type": "string", "description": "Stock ticker symbol"},
+                    "target_weight_pct": {"type": "number", "description": "Target weight percentage (0-100)"},
+                    "notes": {"type": "string", "description": "Optional notes"}
+                },
+                "required": ["portfolio_id", "ticker", "target_weight_pct"]
+            }
+        ),
+        Tool(
+            name="analyze_portfolio_allocation",
+            description="Analyze portfolio allocation vs targets and get rebalancing recommendations",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "portfolio_id": {"type": "string", "description": "Portfolio identifier"}
+                },
+                "required": ["portfolio_id"]
+            }
+        ),
+        Tool(
+            name="get_portfolio_performance",
+            description="Get portfolio performance history, returns, and optional benchmark comparison",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "portfolio_id": {"type": "string", "description": "Portfolio identifier (portfolio1 or portfolio2)"},
+                    "period": {"type": "string", "description": "Historical period (1mo, 3mo, 6mo, 1y, 2y, 5y, max)"},
+                    "benchmark_ticker": {"type": "string", "description": "Optional benchmark ticker for comparison"}
+                },
+                "required": ["portfolio_id"]
+            }
+        ),
+        Tool(
+            name="get_investment_recommendation",
+            description="Get personalized investment recommendation considering portfolio context",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "portfolio_id": {"type": "string", "description": "Portfolio identifier"},
+                    "ticker": {"type": "string", "description": "Stock ticker to analyze"},
+                    "investment_amount": {"type": "number", "description": "Amount to potentially invest"}
+                },
+                "required": ["portfolio_id", "ticker", "investment_amount"]
+            }
         )
     ]
 
@@ -158,6 +244,20 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
                 result = screen_tickers(tickers_data['tickers'], arguments.get('criteria', {}))
             else:
                 result = tickers_data
+        elif name == "list_portfolios":
+            result = list_portfolios()
+        elif name == "get_portfolio":
+            result = get_portfolio(**arguments)
+        elif name == "add_holding":
+            result = add_holding(**arguments)
+        elif name == "set_target_allocation":
+            result = set_target_allocation(**arguments)
+        elif name == "analyze_portfolio_allocation":
+            result = analyze_portfolio_allocation(**arguments)
+        elif name == "get_portfolio_performance":
+            result = get_portfolio_performance(**arguments)
+        elif name == "get_investment_recommendation":
+            result = get_investment_recommendation(**arguments)
         else:
             result = {"success": False, "error": f"Unknown tool: {name}"}
         

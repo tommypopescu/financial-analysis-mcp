@@ -26,7 +26,7 @@ from .tools import (
 from .tools.portfolio import (
     list_portfolios, get_portfolio, add_holding, remove_holding,
     set_target_allocation, analyze_portfolio_allocation,
-    get_investment_recommendation
+    get_portfolio_performance, get_investment_recommendation
 )
 # ============================================================================
 # PORTFOLIO MANAGEMENT ADDITION - END
@@ -226,6 +226,19 @@ async def list_tools():
                 }
             },
             {
+                "name": "get_portfolio_performance",
+                "description": "Get portfolio performance history, returns, and optional benchmark comparison",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "portfolio_id": {"type": "string", "description": "Portfolio identifier (portfolio1 or portfolio2)"},
+                        "period": {"type": "string", "description": "Historical period (1mo, 3mo, 6mo, 1y, 2y, 5y, max)"},
+                        "benchmark_ticker": {"type": "string", "description": "Optional benchmark ticker for comparison"}
+                    },
+                    "required": ["portfolio_id"]
+                }
+            },
+            {
                 "name": "get_investment_recommendation",
                 "description": "Get personalized investment recommendation considering portfolio context",
                 "inputSchema": {
@@ -308,6 +321,8 @@ async def call_tool(request: ToolRequest) -> ToolResponse:
             result = set_target_allocation(**request.arguments)
         elif request.name == "analyze_portfolio_allocation":
             result = analyze_portfolio_allocation(**request.arguments)
+        elif request.name == "get_portfolio_performance":
+            result = get_portfolio_performance(**request.arguments)
         elif request.name == "get_investment_recommendation":
             result = get_investment_recommendation(**request.arguments)
         # ============================================================================

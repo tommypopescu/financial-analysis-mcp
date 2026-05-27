@@ -522,6 +522,102 @@ Add a new ticker to the watchlist.
 
 Screen watchlist for investment opportunities based on criteria.
 
+### 8. get_portfolio_performance
+
+Get portfolio performance history, aggregate returns, and optional benchmark comparison.
+
+**Input Schema**:
+```json
+{
+  "type": "object",
+  "properties": {
+    "portfolio_id": {
+      "type": "string",
+      "description": "Portfolio identifier (portfolio1 or portfolio2)"
+    },
+    "period": {
+      "type": "string",
+      "description": "Historical period (1mo, 3mo, 6mo, 1y, 2y, 5y, max)",
+      "default": "1y"
+    },
+    "benchmark_ticker": {
+      "type": "string",
+      "description": "Optional benchmark ticker for comparison"
+    }
+  },
+  "required": ["portfolio_id"]
+}
+```
+
+**Example Request**:
+```json
+{
+  "name": "get_portfolio_performance",
+  "arguments": {
+    "portfolio_id": "portfolio1",
+    "period": "1y",
+    "benchmark_ticker": "SPY"
+  }
+}
+```
+
+**Example Response**:
+```json
+{
+  "success": true,
+  "result": {
+    "success": true,
+    "portfolio_id": "portfolio1",
+    "period": "1y",
+    "currency": "EUR",
+    "holdings_count": 17,
+    "cost_basis": 76000.0,
+    "start_value": 81250.45,
+    "end_value": 90510.22,
+    "total_return": 14510.22,
+    "total_return_pct": 19.09,
+    "period_return": 9259.77,
+    "period_return_pct": 11.4,
+    "history": {
+      "dates": ["2025-05-27", "2025-05-28"],
+      "portfolio_values": [81250.45, 81410.12]
+    },
+    "holdings_history": {
+      "TLV.RO": {
+        "shares": 1000.0,
+        "avg_price": 48.46,
+        "cost_basis": 48460.0,
+        "start_price": 27.15,
+        "end_price": 30.42,
+        "start_value": 27150.0,
+        "end_value": 30420.0,
+        "return_pct": 12.04,
+        "history": [27150.0, 27210.0]
+      }
+    },
+    "benchmark": {
+      "ticker": "SPY",
+      "start_price": 510.25,
+      "end_price": 563.8,
+      "return_pct": 10.5,
+      "relative_performance_pct": 0.9,
+      "history": {
+        "dates": ["2025-05-27", "2025-05-28"],
+        "close": [510.25, 511.1]
+      }
+    }
+  }
+}
+```
+
+**Notes**:
+- Uses current holdings and share counts to reconstruct historical portfolio value
+- `total_return_pct` is measured against portfolio cost basis
+- `period_return_pct` is measured from the first historical point in the requested period
+- Benchmark comparison is optional and returned only when `benchmark_ticker` is provided
+
+---
+
 **Input Schema**:
 ```json
 {
